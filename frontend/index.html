@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Recipe Organizer</title>
+  <style>
+    body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+      background-color: #fff7ed; 
+      color: #0a1e3a;
+      font-family: Arial, sans-serif;
+      gap: 10px;
+    }
+
+    header {
+      grid-column: 1 / -1;
+      text-align: center;
+      font-family: 'Georgia', serif;
+      font-size: 30px;
+      color: #7C2D12;
+      padding: 20px 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: bold;
+    }
+
+    .left, .right {
+      padding: 20px 24px;
+    }
+
+    .left {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(31,41,55,0.06);
+      margin: 0 0 20px 20px;
+    }
+
+    .right {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(31,41,55,0.06);
+      margin: 0 20px 20px 0;
+    }
+
+    h2 {
+      color: #7C2D12;
+    }
+
+    .recipe_inputs {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+
+    .recipe_inputs label {
+      width: 120px;
+      font-weight: bold;
+      color: #7C2D12;
+    }
+    .recipe_inputs input,
+    .recipe_inputs textarea {
+      flex: 1;
+      padding: 10px 10px;
+      font-size: 14px;
+      border: 1px solid rgba(234, 108, 18, 0.9); 
+      border-radius: 6px;
+      background: #fff7ed; 
+      color: #0a1e3a; 
+  
+    }
+    .recipe_inputs input:focus,
+    .recipe_inputs textarea:focus {
+      outline: none;
+      border-color: rgba(234, 108, 18, 0.9); 
+      background: #fff7ed; 
+    
+    }
+
+    button {
+      padding: 10px 14px;
+      background-color: #F97316;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background-color: #EA580C;
+    }
+    li {
+      margin: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 16px;
+      border: 1px solid rgba(234, 108, 18, 0.9); 
+      border-radius: 8px;
+      background: #fff7ed; 
+    }
+    .meta { 
+      flex: 1; 
+      font-weight: 600; 
+      color: #7C2D12; 
+      font-size: 15px;
+    }
+    ul { 
+      padding: 0; 
+      list-style: none; 
+      margin: 0; 
+    }
+
+    .delete {
+      background: #DC2626;
+      color: white;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-weight: 700;
+    }
+
+  </style>
+</head>
+<body>
+  <header>Recipe Organizer</header>
+
+  <div class="left">
+    <h2>Novi recept</h2>
+    <form id="recipeForm">
+      <div class="recipe_inputs">
+        <label for="name">Naslov:</label>
+        <input type="text" id="name" placeholder="" required>
+      </div>
+
+      <div class="recipe_inputs">
+        <label for="category">Kategorija:</label>
+        <input type="text" id="category" placeholder="">
+      </div>
+
+      <div class="recipe_inputs">
+        <label for="ingredients">Sastojci:</label>
+        <textarea id="ingredients" placeholder="" rows="4"></textarea>
+      </div>
+
+      <div class="recipe_inputs">
+        <label for="description">Izrada:</label>
+        <textarea id="description" placeholder="" rows="6"></textarea>
+      </div>
+
+      <button type="submit">Dodaj recept</button>
+    </form>
+  </div>
+
+  <div class="right">
+    <h2>Lista recepata</h2>
+    <ul id="recipeList"></ul>
+  </div>
+
+  <script>
+    const form = document.getElementById('recipeForm');
+    const recipeList = document.getElementById('recipeList');
+    const API_BASE = 'http://localhost:5000';
+    
+    async function loadRecipes() {
+      const response = await fetch(`${API_BASE}/recipes`);
+      const data = await response.json();
+      recipeList.innerHTML = '';
+
+      data.forEach(recipe => {
+        const li = document.createElement('li');
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.textContent = recipe.name + " (" + recipe.category + ")";
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete';
+        delBtn.textContent = 'Obriši';
+        delBtn.addEventListener('click', async () => {
+          await fetch(`${API_BASE}/recipes/${recipe.id}`, { method: 'DELETE' });
+          loadRecipes();
+        });
+
+        li.appendChild(meta);
+        li.appendChild(delBtn);
+        recipeList.appendChild(li);
+      });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const category = document.getElementById('category').value;
+      const ingredients = document.getElementById('ingredients').value;
+      const description = document.getElementById('description').value;
+
+      await fetch(`${API_BASE}/recipes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, category, ingredients, description })
+      });
+
+      form.reset();
+      loadRecipes();
+    });
+
+    loadRecipes();
+  </script>
+</body>
+</html>

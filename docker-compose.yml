@@ -1,0 +1,46 @@
+services:
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend/index.html:/usr/share/nginx/html/index.html:ro
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - student-net
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    command: flask --app app run --host=0.0.0.0 --port=5000 --debug
+    environment:
+      DATABASE_URL:  postgresql://postgres:postgres@db:5432/recipes_db
+    volumes:
+      - ./backend:/app #binf mount
+    depends_on:
+      - db
+    restart: always
+    networks:
+      - student-net
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: recipes_db
+    volumes:
+      - recipes_db_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - student-net
+
+volumes:
+  recipes_db_data:
+
+networks:
+  student-net:
+    driver: bridge
