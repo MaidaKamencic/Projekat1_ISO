@@ -125,6 +125,41 @@
       padding: 10px 14px;
       font-weight: 700;
     }
+    .view {
+      background: #2563EB;
+      color: white;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-weight: 700;
+      margin-right: 8px;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background-color: #fff7ed;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 700px;
+      color: #0a1e3a;
+    }
+    .modal h3 { margin-top: 0; color: #7C2D12 }
 
   </style>
 </head>
@@ -163,6 +198,21 @@
     <ul id="recipeList"></ul>
   </div>
 
+  <!-- Modal for viewing recipe -->
+  <div id="recipeModal" class="modal">
+    <div class="modal-content">
+      <h3 id="modalTitle">Recept</h3>
+      <p><strong>Kategorija:</strong> <span id="modalCategory"></span></p>
+      <p><strong>Sastojci:</strong></p>
+      <p id="modalIngredients" style="white-space:pre-wrap"></p>
+      <p><strong>Izrada:</strong></p>
+      <p id="modalDescription" style="white-space:pre-wrap"></p>
+      <div style="text-align:right; margin-top:12px;">
+        <button id="closeModal">Zatvori</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const form = document.getElementById('recipeForm');
     const recipeList = document.getElementById('recipeList');
@@ -180,16 +230,24 @@
         meta.className = 'meta';
         meta.textContent = recipe.name + " (" + recipe.category + ")";
 
-        const delBtn = document.createElement('button');
-        delBtn.className = 'delete';
-        delBtn.textContent = 'Obriši';
-        delBtn.addEventListener('click', async () => {
-          await fetch(`${API_BASE}/recipes/${recipe.id}`, { method: 'DELETE' });
-          loadRecipes();
-        });
+          const viewBtn = document.createElement('button');
+          viewBtn.className = 'view';
+          viewBtn.textContent = 'Pogledaj';
+          viewBtn.addEventListener('click', () => {
+            openModal(recipe);
+          });
 
-        li.appendChild(meta);
-        li.appendChild(delBtn);
+          const delBtn = document.createElement('button');
+          delBtn.className = 'delete';
+          delBtn.textContent = 'Obriši';
+          delBtn.addEventListener('click', async () => {
+            await fetch(`${API_BASE}/recipes/${recipe.id}`, { method: 'DELETE' });
+            loadRecipes();
+          });
+
+          li.appendChild(meta);
+          li.appendChild(viewBtn);
+          li.appendChild(delBtn);
         recipeList.appendChild(li);
       });
     }
@@ -209,6 +267,26 @@
 
       form.reset();
       loadRecipes();
+    });
+
+    function openModal(recipe) {
+      document.getElementById('modalTitle').textContent = recipe.name;
+      document.getElementById('modalCategory').textContent = recipe.category || '-';
+      document.getElementById('modalIngredients').textContent = recipe.ingredients || '-';
+      document.getElementById('modalDescription').textContent = recipe.description || '-';
+      const modal = document.getElementById('recipeModal');
+      modal.style.display = 'flex';
+    }
+
+    document.getElementById('closeModal').addEventListener('click', () => {
+      document.getElementById('recipeModal').style.display = 'none';
+    });
+
+    // Close modal when clicking outside content
+    document.getElementById('recipeModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('recipeModal')) {
+        document.getElementById('recipeModal').style.display = 'none';
+      }
     });
 
     loadRecipes();
