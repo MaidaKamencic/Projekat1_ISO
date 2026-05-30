@@ -4,8 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
-
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=False)
 database_url = os.environ.get("DATABASE_URL")
 if not database_url:
     raise RuntimeError("DATABASE_URL environment variable is not set")
@@ -46,7 +45,7 @@ def add_recipe():
 
     return jsonify({"status": "ok", "id": recipe.id}), 201
 
-@app.route("/recipes", methods=["GET"])
+@app.route("/recipes", methods=["GET", "OPTIONS"])
 def get_recipes():
     recipes = Recipe.query.order_by(Recipe.id.desc()).all()
     return jsonify([
