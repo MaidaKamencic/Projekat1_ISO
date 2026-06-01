@@ -17,7 +17,7 @@ services:
       - "5000:5000"
     command: sh -c "python /app/wait_for_db.py && flask --app app run --host=0.0.0.0 --port=5000"
     environment:
-      DATABASE_URL:  postgresql://postgres:postgres@db:5432/recipes_db
+     - .env
     volumes:
       - ./backend:/app #binf mount
     depends_on:
