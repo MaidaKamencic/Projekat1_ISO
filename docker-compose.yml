@@ -16,7 +16,7 @@ services:
     ports:
       - "5000:5000"
     command: sh -c "python /app/wait_for_db.py && flask --app app run --host=0.0.0.0 --port=5000"
-    environment:
+    env_file:
      - .env
     volumes:
       - ./backend:/app #binf mount
@@ -26,22 +26,7 @@ services:
     networks:
       - student-net
 
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: recipes_db
-    volumes:
-      - recipes_db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d recipes_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: always
-    networks:
-      - student-net
+  
 
 volumes:
   recipes_db_data:
